@@ -1,0 +1,3 @@
+[submodule "asmbook"]
+	path = asmbook
+	url = https://github.com/surferkip/asmbook.git
