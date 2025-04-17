@@ -7,9 +7,32 @@ INCLUDE Irvine32.inc
 .data
 
 xWall BYTE 52 DUP("#"),0
-
-strScore BYTE "Your score is: ",0
 score BYTE 0
+
+    intro BYTE "Press 'S' to Start",0
+    introDelete BYTE "                  ",0
+    introXPos BYTE 53
+    introYPos BYTE 20
+    GAME_TITLE_X BYTE 11
+    GAME_TITLE_Y BYTE 7
+    ; Define an array of strings with newline characters at the end
+    GAME_TITLE DWORD string01, string02, string03, string04, string05, string06, string07, string08, string09, string10, string11
+    string01 BYTE " .----------------.  .-----------------. .----------------.  .----------------.  .----------------. ",  0
+    string02 BYTE "| .--------------. || .--------------. || .--------------. || .--------------. || .--------------. |",  0
+    string03 BYTE "| |    _______   | || | ____  _____  | || |      __      | || |  ___  ____   | || |  _________   | |",  0
+    string04 BYTE "| |   /  ___  |  | || ||_   \|_   _| | || |     /  \     | || | |_  ||_  _|  | || | |_   ___  |  | |",  0
+    string05 BYTE "| |  |  (__ \_|  | || |  |   \ | |   | || |    / /\ \    | || |   | |_/ /    | || |   | |_  \_|  | |",  0
+    string06 BYTE "| |   '.___`-.   | || |  | |\ \| |   | || |   / ____ \   | || |   |  __'.    | || |   |  _|  _   | |",  0
+    string07 BYTE "| |  |`\____) |  | || | _| |_\   |_  | || | _/ /    \ \_ | || |  _| |  \ \_  | || |  _| |___/ |  | |",  0
+    string08 BYTE "| |  |_______.'  | || ||_____|\____| | || ||____|  |____|| || | |____||____| | || | |_________|  | |",  0
+    string09 BYTE "| |              | || |              | || |              | || |              | || |              | |",  0
+    string10 BYTE "| '--------------' || '--------------' || '--------------' || '--------------' || '--------------' |",  0
+    string11 BYTE " '----------------'  '----------------'  '----------------'  '----------------'  '----------------' ",  0
+	TITLE_ANIM_SPEED DWORD 90
+	STRING_PRESS_ENTER BYTE "Hold 'ENTER' to Start",0
+STRING_PRESS_ENTER_X BYTE 50
+STRING_PRESS_ENTER_Y BYTE 25
+
 
 strTryAgain BYTE "Try Again?  1=yes, 0=no",0
 invalidInput BYTE "invalid input",0
@@ -32,13 +55,15 @@ inputChar BYTE "+"					; + denotes the start of the game
 lastInputChar BYTE ?				
 
 strSpeed BYTE "Speed (1-fast, 2-medium, 3-slow): ",0
-speed	DWORD 0
+speed	DWORD 80
+
+;===================================================================================================
 
 .code
 main PROC
+
+	call DrawMenu
 	call DrawWall			;draw walls
-	call DrawScoreboard		;draw scoreboard
-	call ChooseSpeed		;let player to choose Speed
 
 	mov esi,0
 	mov ecx,5
@@ -50,6 +75,9 @@ loop drawSnake
 	call Randomize
 	call CreateRandomCoin
 	call DrawCoin			;set up finish
+
+	mov inputChar,"d"
+	call checkRight
 
 	gameLoop::
 		mov dl,106						;move cursor to coordinates
@@ -79,6 +107,8 @@ loop drawSnake
 
 		cmp inputChar,"d"
 		je checkRight
+
+		
 		jne gameLoop					; reloop if no meaningful key was entered
 
 
@@ -208,6 +238,7 @@ jmp gameLoop					;reiterate the gameloop
 INVOKE ExitProcess,0
 main ENDP
 
+;===================================================================================================
 
 DrawWall PROC					;procedure to draw wall
 	mov dl,xPosWall[0]
@@ -245,53 +276,54 @@ DrawWall PROC					;procedure to draw wall
 	ret
 DrawWall ENDP
 
+;===================================================================================================
 
-DrawScoreboard PROC				;procedure to draw scoreboard
-	mov dl,2
-	mov dh,1
-	call Gotoxy
-	mov edx,OFFSET strScore		;print string that indicates score
-	call WriteString
-	mov eax,"0"
-	call WriteChar				;scoreboard starts with 0
-	ret
-DrawScoreboard ENDP
+DrawMenu PROC
+    
+	mov eax, YELLOW
+    call SetTextColor
 
+	mov esi, OFFSET GAME_TITLE
+    mov ecx, LENGTHOF GAME_TITLE
+    mov bl, GAME_TITLE_X
+    mov bh, GAME_TITLE_Y
 
-ChooseSpeed PROC			;procedure for player to choose speed
-	mov edx,0
-	mov dl,71				
-	mov dh,1
-	call Gotoxy	
-	mov edx,OFFSET strSpeed	; prompt to enter integers (1,2,3)
-	call WriteString
-	mov esi, 40				; milisecond difference per speed level
-	mov eax,0
-	call readInt			
-	cmp ax,1				;input validation
-	jl invalidspeed
-	cmp ax, 3
-	jg invalidspeed
-	mul esi	
-	mov speed, eax			;assign speed variable in mililiseconds
-	ret
+    L1:									; Print game title
+		mov eax, TITLE_ANIM_SPEED		; Add a delay per line for a cool animation
+		call delay
+		mov dl, bl
+		mov dh, bh
+		call Gotoxy
+		mov edx, [esi]
+		call WriteString
+		add esi, TYPE GAME_TITLE
+		inc bh
+    loop L1
 
-	invalidspeed:			;jump here if user entered an invalid number
-	mov dl,105				
-	mov dh,1
-	call Gotoxy	
-	mov edx, OFFSET invalidInput		;print error message		
-	call WriteString
-	mov ax, 1500
-	call delay
-	mov dl,105				
-	mov dh,1
-	call Gotoxy	
-	mov edx, OFFSET blank				;erase error message after 1.5 secs of delay
-	call writeString
-	call ChooseSpeed					;call procedure for user to choose again
-	ret
-ChooseSpeed ENDP
+    mov dl, STRING_PRESS_ENTER_X           ; Print "Press 'ENTER' to Start"
+    mov dh, STRING_PRESS_ENTER_Y
+    call Gotoxy
+	mov eax, LIGHTCYAN
+    call SetTextColor
+    mov edx, OFFSET STRING_PRESS_ENTER
+    call WriteString
+    call RESET_CURSOR
+
+	MenuLoop:
+		call Readkey
+		cmp al,13           ; Check if 'ENTER' key (ASCII 13) is pressed  
+		jz StartGame
+		cmp al,27           ; Check if 'ESC' key (ASCII 13) is pressed 
+		jz ExitGame
+		jmp MenuLoop
+
+    StartGame:
+		call Clrscr
+        ret
+
+DrawMenu ENDP
+
+;===================================================================================================
 
 DrawPlayer PROC			; draw player at (xPos,yPos)
 	mov dl,xPos[esi]
@@ -304,6 +336,8 @@ DrawPlayer PROC			; draw player at (xPos,yPos)
 	ret
 DrawPlayer ENDP
 
+;===================================================================================================
+
 UpdatePlayer PROC		; erase player at (xPos,yPos)
 	mov dl, xPos[esi]
 	mov dh,yPos[esi]
@@ -314,6 +348,8 @@ UpdatePlayer PROC		; erase player at (xPos,yPos)
 	mov al, dl
 	ret
 UpdatePlayer ENDP
+
+;===================================================================================================
 
 DrawCoin PROC						;procedure to draw coin
 	mov eax,yellow (yellow * 16)
@@ -327,6 +363,8 @@ DrawCoin PROC						;procedure to draw coin
 	call SetTextColor
 	ret
 DrawCoin ENDP
+
+;===================================================================================================
 
 CreateRandomCoin PROC				;procedure to create a random coin
 	mov eax,49
@@ -356,6 +394,8 @@ loop checkCoinXPos
 	call CreateRandomCoin		; coin generated on snake, calling function again to create another set of coordinates
 CreateRandomCoin ENDP
 
+;===================================================================================================
+
 CheckSnake PROC				;check whether the snake head collides w its body 
 	mov al, xPos[0] 
 	mov ah, yPos[0] 
@@ -376,6 +416,8 @@ loop checkXposition
 
 CheckSnake ENDP
 
+;===================================================================================================
+
 DrawBody PROC				;procedure to print body of the snake
 		mov ecx, 4
 		add cl, score		;number of iterations to print the snake body n tail	
@@ -393,6 +435,8 @@ DrawBody PROC				;procedure to print body of the snake
 		jl printbodyloop
 	ret
 DrawBody ENDP
+
+;===================================================================================================
 
 EatingCoin PROC
 	; snake is eating coin
@@ -441,6 +485,7 @@ EatingCoin PROC
 	ret
 EatingCoin ENDP
 
+;===================================================================================================
 
 YouDied PROC
 	mov eax, 1000
@@ -489,6 +534,8 @@ YouDied PROC
 	jmp retry						;let user input again
 YouDied ENDP
 
+;===================================================================================================
+
 ReinitializeGame PROC		;procedure to reinitialize everything
 	mov xPos[0], 45
 	mov xPos[1], 44
@@ -507,4 +554,14 @@ ReinitializeGame PROC		;procedure to reinitialize everything
 	Call ClrScr
 	jmp main				;start over the game
 ReinitializeGame ENDP
+
+;===================================================================================================
+
+RESET_CURSOR PROC
+    mov dl, 0
+	mov dh, 0
+	call Gotoxy
+    ret
+RESET_CURSOR ENDP
+
 END main
