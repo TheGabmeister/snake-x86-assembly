@@ -245,6 +245,7 @@ DrawWall PROC
 	mov eax, GRAY
 	call SetTextColor	
 
+	; Create solid walls
 	mov dl, 0          
 	mov dh, 0          
 	mov cx, 30        ; Outer loop for rows (y-axis)
@@ -264,7 +265,28 @@ DrawWall PROC
 		mov dl, 0
 	loop L13
 
+	; Create space in center
+	mov dl, xPosWall[0]          
+	mov dh, yPosWall[0]          
+	mov cx, 19        ; Outer loop for rows (y-axis)
+	L15:
+		mov eax, 60		
+		call delay
+		push cx
+		mov cx, 51        ; Inner loop for columns (x-axis)
+		L16:
+			call Gotoxy
+			mov al, " " 
+			call WriteChar
+			inc dl
+			loop L16 
+		pop cx
+		inc dh
+		mov dl, xPosWall[0]
+	loop L15
 
+	mov eax, BLUE
+	call SetTextColor
 
 	mov dl,xPosWall[0]
 	mov dh,yPosWall[0]
@@ -280,7 +302,7 @@ DrawWall PROC
 
 	mov dl, xPosWall[2]
 	mov dh, yPosWall[2]
-	mov eax,"#"	
+	mov al, 0DBh
 	inc yPosWall[3]
 	L11: 
 	call Gotoxy	
@@ -291,7 +313,7 @@ DrawWall PROC
 
 	mov dl, xPosWall[0]
 	mov dh, yPosWall[0]
-	mov eax,"#"	
+	mov al, 0DBh
 	L12: 
 	call Gotoxy	
 	call WriteChar	
