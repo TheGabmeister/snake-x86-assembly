@@ -240,7 +240,20 @@ main ENDP
 
 ;===================================================================================================
 
-DrawWall PROC					;procedure to draw wall
+DrawWall PROC					
+	
+	mov ecx, 3600          
+	   
+	PrintLoop:
+		mov eax, GRAY
+		call SetTextColor
+		mov al, 0DBh   
+		call WriteChar		
+		mov eax, 1		
+		call delay
+		       
+		loop PrintLoop       
+
 	mov dl,xPosWall[0]
 	mov dh,yPosWall[0]
 	call Gotoxy	
@@ -280,7 +293,7 @@ DrawWall ENDP
 
 DrawMenu PROC
     
-	mov eax, YELLOW
+	mov eax, LIGHTGREEN
     call SetTextColor
 
 	mov esi, OFFSET GAME_TITLE
@@ -303,7 +316,7 @@ DrawMenu PROC
     mov dl, STRING_PRESS_ENTER_X           ; Print "Press 'ENTER' to Start"
     mov dh, STRING_PRESS_ENTER_Y
     call Gotoxy
-	mov eax, LIGHTCYAN
+	mov eax, WHITE
     call SetTextColor
     mov edx, OFFSET STRING_PRESS_ENTER
     call WriteString
