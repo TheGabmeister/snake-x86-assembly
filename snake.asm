@@ -5,31 +5,29 @@ ExitProcess PROTO, dwExitCode: DWORD
 INCLUDE Irvine32.inc
 
 .data
-
-xWall BYTE 52 DUP("#"),0
 score BYTE 0
 
-    intro BYTE "Press 'S' to Start",0
-    introDelete BYTE "                  ",0
-    introXPos BYTE 53
-    introYPos BYTE 20
-    GAME_TITLE_X BYTE 11
-    GAME_TITLE_Y BYTE 7
-    ; Define an array of strings with newline characters at the end
-    GAME_TITLE DWORD string01, string02, string03, string04, string05, string06, string07, string08, string09, string10, string11
-    string01 BYTE " .----------------.  .-----------------. .----------------.  .----------------.  .----------------. ",  0
-    string02 BYTE "| .--------------. || .--------------. || .--------------. || .--------------. || .--------------. |",  0
-    string03 BYTE "| |    _______   | || | ____  _____  | || |      __      | || |  ___  ____   | || |  _________   | |",  0
-    string04 BYTE "| |   /  ___  |  | || ||_   \|_   _| | || |     /  \     | || | |_  ||_  _|  | || | |_   ___  |  | |",  0
-    string05 BYTE "| |  |  (__ \_|  | || |  |   \ | |   | || |    / /\ \    | || |   | |_/ /    | || |   | |_  \_|  | |",  0
-    string06 BYTE "| |   '.___`-.   | || |  | |\ \| |   | || |   / ____ \   | || |   |  __'.    | || |   |  _|  _   | |",  0
-    string07 BYTE "| |  |`\____) |  | || | _| |_\   |_  | || | _/ /    \ \_ | || |  _| |  \ \_  | || |  _| |___/ |  | |",  0
-    string08 BYTE "| |  |_______.'  | || ||_____|\____| | || ||____|  |____|| || | |____||____| | || | |_________|  | |",  0
-    string09 BYTE "| |              | || |              | || |              | || |              | || |              | |",  0
-    string10 BYTE "| '--------------' || '--------------' || '--------------' || '--------------' || '--------------' |",  0
-    string11 BYTE " '----------------'  '----------------'  '----------------'  '----------------'  '----------------' ",  0
-	TITLE_ANIM_SPEED DWORD 90
-	STRING_PRESS_ENTER BYTE "Hold 'ENTER' to Start",0
+intro BYTE "Press 'S' to Start",0
+introDelete BYTE "                  ",0
+introXPos BYTE 53
+introYPos BYTE 20
+GAME_TITLE_X BYTE 11
+GAME_TITLE_Y BYTE 7
+; Define an array of strings with newline characters at the end
+GAME_TITLE DWORD string01, string02, string03, string04, string05, string06, string07, string08, string09, string10, string11
+string01 BYTE " .----------------.  .-----------------. .----------------.  .----------------.  .----------------. ",  0
+string02 BYTE "| .--------------. || .--------------. || .--------------. || .--------------. || .--------------. |",  0
+string03 BYTE "| |    _______   | || | ____  _____  | || |      __      | || |  ___  ____   | || |  _________   | |",  0
+string04 BYTE "| |   /  ___  |  | || ||_   \|_   _| | || |     /  \     | || | |_  ||_  _|  | || | |_   ___  |  | |",  0
+string05 BYTE "| |  |  (__ \_|  | || |  |   \ | |   | || |    / /\ \    | || |   | |_/ /    | || |   | |_  \_|  | |",  0
+string06 BYTE "| |   '.___`-.   | || |  | |\ \| |   | || |   / ____ \   | || |   |  __'.    | || |   |  _|  _   | |",  0
+string07 BYTE "| |  |`\____) |  | || | _| |_\   |_  | || | _/ /    \ \_ | || |  _| |  \ \_  | || |  _| |___/ |  | |",  0
+string08 BYTE "| |  |_______.'  | || ||_____|\____| | || ||____|  |____|| || | |____||____| | || | |_________|  | |",  0
+string09 BYTE "| |              | || |              | || |              | || |              | || |              | |",  0
+string10 BYTE "| '--------------' || '--------------' || '--------------' || '--------------' || '--------------' |",  0
+string11 BYTE " '----------------'  '----------------'  '----------------'  '----------------'  '----------------' ",  0
+TITLE_ANIM_SPEED DWORD 90
+STRING_PRESS_ENTER BYTE "Hold 'ENTER' to Start",0
 STRING_PRESS_ENTER_X BYTE 50
 STRING_PRESS_ENTER_Y BYTE 25
 
@@ -40,7 +38,7 @@ strYouDied BYTE "you died ",0
 strPoints BYTE " point(s)",0
 blank BYTE "                                     ",0
 
-snake BYTE "X", 104 DUP("x")
+snake BYTE 0DBh, 104 DUP(0DBh)
 
 xPos BYTE 45,44,43,42,41, 100 DUP(?)
 yPos BYTE 15,15,15,15,15, 100 DUP(?)
@@ -200,6 +198,7 @@ loop drawSnake
 		mov ah, yPos[esi]
 		mov al, xPos[esi]
 		inc xPos[esi]
+
 		call DrawPlayer
 		call DrawBody
 		call CheckSnake
@@ -288,17 +287,24 @@ DrawWall PROC
 	mov eax, BLUE
 	call SetTextColor
 
-	mov dl,xPosWall[0]
+	mov dl,xPosWall[0]			;draw upper wall
 	mov dh,yPosWall[0]
 	call Gotoxy	
-	mov edx,OFFSET xWall
-	call WriteString			;draw upper wall
+	mov al, 0DBh 	
+	mov cx, 51					; Inner loop for columns (x-axis)
+	L17:
+		call WriteChar
+		loop L17 
+				
 
-	mov dl,xPosWall[1]
+	mov dl,xPosWall[0]			;draw upper wall
 	mov dh,yPosWall[1]
 	call Gotoxy	
-	mov edx,OFFSET xWall		
-	call WriteString			;draw lower wall
+	mov al, 0DBh 	
+	mov cx, 51					; Inner loop for columns (x-axis)
+	L18:
+		call WriteChar
+		loop L18 
 
 	mov dl, xPosWall[2]
 	mov dh, yPosWall[2]
@@ -399,7 +405,7 @@ UpdatePlayer ENDP
 ;===================================================================================================
 
 DrawCoin PROC						;procedure to draw coin
-	mov eax,yellow (yellow * 16)
+	mov eax,LIGHTGREEN (LIGHTGREEN * 16)
 	call SetTextColor				;set color to yellow for coin
 	mov dl,xCoinPos
 	mov dh,yCoinPos
@@ -466,20 +472,21 @@ CheckSnake ENDP
 ;===================================================================================================
 
 DrawBody PROC				;procedure to print body of the snake
-		mov ecx, 4
-		add cl, score		;number of iterations to print the snake body n tail	
-		printbodyloop:	
-		inc esi				;loop to print remaining units of snake
-		call UpdatePlayer
-		mov dl, xPos[esi]
-		mov dh, yPos[esi]	;dldh temporarily stores the current pos of the unit 
-		mov yPos[esi], ah
-		mov xPos[esi], al	;assign new position to the unit
-		mov al, dl
-		mov ah,dh			;move the current position back into alah
-		call DrawPlayer
-		cmp esi, ecx
-		jl printbodyloop
+		
+	mov ecx, 4
+	add cl, score		;number of iterations to print the snake body n tail	
+	printbodyloop:	
+	inc esi				;loop to print remaining units of snake
+	call UpdatePlayer
+	mov dl, xPos[esi]
+	mov dh, yPos[esi]	;dldh temporarily stores the current pos of the unit 
+	mov yPos[esi], ah
+	mov xPos[esi], al	;assign new position to the unit
+	mov al, dl
+	mov ah,dh			;move the current position back into alah
+	call DrawPlayer
+	cmp esi, ecx
+	jl printbodyloop
 	ret
 DrawBody ENDP
 
@@ -524,11 +531,6 @@ EatingCoin PROC
 	call CreateRandomCoin
 	call DrawCoin			
 
-	mov dl,17				; write updated score
-	mov dh,1
-	call Gotoxy
-	mov al,score
-	call WriteInt
 	ret
 EatingCoin ENDP
 
