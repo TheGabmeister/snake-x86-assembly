@@ -241,18 +241,30 @@ main ENDP
 ;===================================================================================================
 
 DrawWall PROC					
-	
-	mov ecx, 3600          
-	   
-	PrintLoop:
-		mov eax, GRAY
-		call SetTextColor
-		mov al, 0DBh   
-		call WriteChar		
-		mov eax, 1		
+	 
+	mov eax, GRAY
+	call SetTextColor	
+
+	mov dl, 0          
+	mov dh, 0          
+	mov cx, 30        ; Outer loop for rows (y-axis)
+	L13:
+		mov eax, 60		
 		call delay
-		       
-		loop PrintLoop       
+		push cx
+		mov cx, 120        ; Inner loop for columns (x-axis)
+		L14:
+			call Gotoxy
+			mov al, 0DBh 
+			call WriteChar
+			inc dl
+			loop L14 
+		pop cx
+		inc dh
+		mov dl, 0
+	loop L13
+
+
 
 	mov dl,xPosWall[0]
 	mov dh,yPosWall[0]
