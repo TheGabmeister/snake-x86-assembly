@@ -10,4 +10,4 @@ extract-Irvine32.bat
 The batch file will extract the Irvine library from the submodule, and will delete the submodule. Open `snake.sln` using Visual Studio 2022. It should have all the necessary includes already set up and will link to Irvine32.lib automatically when you run it.
 
 # Controls
-- Up,Down,Left,Right arrow keys to move
+- `Up`,`Down`,`Left`,`Right` arrow keys to move
